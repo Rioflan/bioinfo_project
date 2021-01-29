@@ -44,7 +44,6 @@ for i in range(len(arguments.x)):
     score_matrix[i][0] = i * gamma[0] + gamma[1]
 
 # Best K, used for step 3, defaults to 1 to keep step 2
-bk = 1
 for i in range(1, len(arguments.x) + 1):
     for j in range(1, len(arguments.y) + 1):
         substitution = input_type.matrix[input_type.map[arguments.x[i-1]]] \
@@ -53,21 +52,27 @@ for i in range(1, len(arguments.x) + 1):
         insertion = gamma[1] + gamma[0] + score_matrix[i-1][j]
         deletion = gamma[1] + gamma[0] + score_matrix[i][j-1]
         # Insertion Best K and Deletion Best K, used for step 3
+        bik, bdk = 1, 1
         if gamma[1] != 0:
             for k in range(2, len(arguments.x) + 1):
                 ninsertion = gamma[1] + gamma[0] * k + score_matrix[i-k][j]
                 if ninsertion > insertion:
                     insertion = ninsertion
-                    bk = k
-            deletion = gamma[1] + gamma[0] * bk + score_matrix[i][j - bk]
+                    bik = k
+            for k in range(2, len(arguments.y) + 1):
+                ndeletion = gamma[1] + gamma[0] * k + score_matrix[i][j-k]
+                if ndeletion > deletion:
+                    deletion = ndeletion
+                    bdk = k
         score_matrix[i][j] = substitution
         backtrack_matrix[i][j] = (i-1, j-1)
         if score_matrix[i][j] < insertion:
             score_matrix[i][j] = insertion
-            backtrack_matrix[i][j] = (i-bk, j)
+            backtrack_matrix[i][j] = (i-bik, j)
         if score_matrix[i][j] < deletion:
             score_matrix[i][j] = deletion
-            backtrack_matrix[i][j] = (i, j-bk)
+            backtrack_matrix[i][j] = (i, j-bdk)
+
 
 if arguments.cmd == Cmd.ALIGN:
     ax, ay = '', ''
@@ -77,12 +82,14 @@ if arguments.cmd == Cmd.ALIGN:
         if nu == u - 1 and nv == v - 1:
             ax = arguments.x[u - 1] + ax
             ay = arguments.y[v - 1] + ay
-        if nu == u - bk and nv == v:
-            ax = arguments.x[u-bk:u] + ax
-            ay = '-' * bk + ay
-        if nu == u and nv == v - bk:
-            ax = '-' * bk + ax
-            ay = arguments.y[v-bk:v] + ay
+        elif nv == v:
+            k = u - nu
+            ax = arguments.x[u-k:u] + ax
+            ay = '-' * k + ay
+        elif nu == u:
+            k = v - nv
+            ax = '-' * k + ax
+            ay = arguments.y[v-k:v] + ay
         u, v = nu, nv
     print(ax)
     print(ay)
