@@ -7,17 +7,19 @@ from const_defaults import *
 # Parsing
 
 parser = argparse.ArgumentParser(description='Projet bioinfo')
-parser.add_argument('cmd', type=toCmd)
+parser.add_argument('cmd')
 parser.add_argument('x')
 parser.add_argument('y')
 parser.add_argument('--gamma')
 arguments = parser.parse_args()
+arguments.cmd = Cmd(arguments.cmd)
 
 if arguments.gamma:
     gamma = [int(x) for x in arguments.gamma.split(',')]
 else:
     gamma = [-1, 0]
 
+# Script
 
 input_type = None
 
@@ -28,8 +30,7 @@ elif arn_req.fullmatch(arguments.x) and arn_req.fullmatch(arguments.y):
 elif prot_reg.match(arguments.x) and prot_reg.fullmatch(arguments.y):
     input_type = Protein()
 else:
-    print('Sequence is not matching pattern')
-    exit(1)
+    raise ValueError('Sequence is not matching pattern')
 
 score_matrix = [[0 for j in range(len(arguments.y) + 1)]
                     for i in range(len(arguments.x) + 1)]
@@ -43,7 +44,6 @@ for j in range(len(arguments.y)):
 for i in range(len(arguments.x)):
     score_matrix[i][0] = i * gamma[0] + gamma[1]
 
-# Best K, used for step 3, defaults to 1 to keep step 2
 for i in range(1, len(arguments.x) + 1):
     for j in range(1, len(arguments.y) + 1):
         substitution = input_type.matrix[input_type.map[arguments.x[i-1]]] \

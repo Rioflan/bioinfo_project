@@ -5,13 +5,6 @@ class Cmd(Enum):
     SCORE = 'score'
     ALIGN = 'align'
 
-def toCmd(string):
-    try:
-        return Cmd(string)
-    except Exception as e:
-        print(e)
-        exit(1)
-
 class Adn:
     def __init__(self):
         self.seq = ['A', 'T', 'C', 'G']
